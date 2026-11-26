@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Флорбол · облік матчів і результатів</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;700&family=Fira+Sans+Extra+Condensed:wght@600;700;800&family=Fira+Sans:wght@400;500;700&display=swap">
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body data-section="standings">
+<div class="page">
+
+    <!-- ШАПКА -->
+    <header class="site-header">
+        <div class="header-top">
+            <div class="brand">
+                <span class="brand-title">Флорбол</span>
+                <span class="brand-subtitle">облік матчів і результатів</span>
+            </div>
+
+            <div class="user-box">
+                <!-- Поточна роль: "Ви — відвідувач" або червона мітка "адміністратор" -->
+                <span class="role-badge" id="role-badge">Ви — відвідувач</span>
+                <button type="button" id="login-button" class="btn btn-dark visitor-only">Увійти</button>
+                <button type="button" id="logout-button" class="btn btn-outline admin-only">Вийти</button>
+            </div>
+        </div>
+
+        <!-- Рядок з обраним турніром -->
+        <div class="tournament-bar">
+            <span class="tournament-current">Турнір: <strong id="active-tournament-name">не обрано</strong></span>
+            <span id="tournament-dates" class="tournament-dates"></span>
+            <!-- data-go="tournaments" — відкриває сторінку "Усі турніри" -->
+            <button type="button" class="link-button" data-go="tournaments">
+                змінити<span class="only-desktop"> турнір</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ОСНОВНА ЧАСТИНА -->
+    <!-- Сітка: зліва меню + "Наступна гра", праворуч — один розділ.
+         На телефоні меню стає вкладками під шапкою -->
+    <div class="layout">
+
+        <!-- Меню розділів. data-go — назва розділу, який відкриє кнопка -->
+        <nav class="section-nav" aria-label="Розділи">
+            <div class="nav-title">Розділи</div>
+            <button type="button" class="nav-link active" data-go="standings">Таблиця</button>
+            <button type="button" class="nav-link" data-go="matches">Матчі</button>
+            <button type="button" class="nav-link" data-go="teams">Команди</button>
+            <button type="button" class="nav-link" data-go="players">Гравці</button>
+            <!-- Два варіанти тексту: "Усі турніри" на комп'ютері, "Турніри" на телефоні -->
+            <button type="button" class="nav-link" data-go="tournaments"><span class="only-desktop">Усі турніри</span><span class="only-mobile">Турніри</span></button>
+        </nav>
+
+        <!-- Блок "Наступна гра" -->
+        <aside class="next-game" aria-label="Наступна гра">
+            <div class="next-game-label">Наступна гра<span id="next-game-when-short" class="only-mobile"></span></div>
+            <div id="next-game-teams" class="next-game-teams">—</div>
+            <div id="next-game-when" class="next-game-when only-desktop-block"></div>
+            <div id="next-game-venue" class="next-game-venue only-desktop-block"></div>
+        </aside>
+
+        <main class="content">
+
+            <!-- РОЗДІЛ "ТУРНІРНА ТАБЛИЦЯ" -->
+            <section id="section-standings" class="page-section">
+                <div class="section-head">
+                    <h1 class="section-title">Турнірна таблиця</h1>
+                </div>
+
+                <!-- Перемикач "Зараз тривають": показується, лише якщо турнірів, що тривають, більше одного
+                     І обраний турнір — один із них -->
+                <div id="running-switcher" class="running-switcher" hidden>
+                    <span class="switcher-label">Зараз тривають:</span>
+                    <div id="running-buttons" class="switch-buttons"></div>
+                </div>
+
+                <div class="standings-layout">
+                    <div class="standings-main">
+                        <div class="table-box">
+                            <table class="standings-table">
+                                <thead>
+                                    <tr>
+                                        <th class="col-pos">#</th>
+                                        <th class="col-team">Команда</th>
+                                        <th class="num" title="Зіграно матчів">І</th>
+                                        <th class="num" title="Перемоги">В</th>
+                                        <th class="num" title="Нічиї">Н</th>
+                                        <th class="num" title="Поразки">П</th>
+                                        <th class="num" title="Забиті голи">ЗГ</th>
+                                        <th class="num" title="Пропущені голи">ПГ</th>
+                                        <th class="num col-gd" title="Різниця голів">РГ</th>
+                                        <!-- На телефоні замість "Очки" — "О", щоб вмістились усі колонки -->
+                                        <th class="num col-points" title="Очки"><span class="only-desktop">Очки</span><span class="only-mobile">О</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="standings-table-body"></tbody>
+                            </table>
+                        </div>
+                        <p class="table-note">
+                            І — ігри, В — перемоги, Н — нічиї, П — поразки, ЗГ — забиті голи, ПГ — пропущені,
+                            РГ — різниця голів.
+                        </p>
+                    </div>
+
+                    <!-- Останні результати обраного турніру -->
+                    <aside class="results-box" aria-label="Результати">
+                        <h2 class="block-title">Результати</h2>
+                        <div id="results-list"></div>
+                        <button type="button" id="results-all-link" class="link-button" data-go="matches">усі матчі турніру</button>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- РОЗДІЛ "МАТЧІ" -->
+            <section id="section-matches" class="page-section" hidden>
+                <div class="section-head">
+                    <h1 class="section-title">Матчі</h1>
+                    <span id="matches-count" class="section-count"></span>
+                </div>
+
+                <!-- Кнопка "+ Додати матч" — тільки на телефоні: відкриває форму нижче (navigation.js) -->
+                <button type="button" class="add-toggle admin-only" data-open-form="match-box">
+                    <span class="plus" aria-hidden="true">+</span> Додати матч
+                </button>
+
+                <!-- mobile-collapsible — на телефоні форма схована, поки не натиснути "+ Додати матч" -->
+                <fieldset id="match-box" class="form-box mobile-collapsible admin-only">
+                    <!-- турнір підставляється автоматично (обраний користувачем) -->
+                    <legend>Новий матч<span class="only-desktop"> у турнірі <span id="match-tournament-name">не обрано</span></span></legend>
+                    <form id="match-form" class="form-grid">
+                        <label class="field">
+                            <span class="field-label">Господарі</span>
+                            <select id="match-home-team" required>
+                                <option value="">— оберіть —</option>
+                            </select>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Гості</span>
+                            <select id="match-away-team" required>
+                                <option value="">— оберіть —</option>
+                            </select>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Дата й час</span>
+                            <input type="datetime-local" id="match-date" required>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Місце</span>
+                            <input type="text" id="match-venue" placeholder="Стадіон / зал" required>
+                        </label>
+                        <div class="form-actions">
+                            <!-- "Скасувати" видно тільки на телефоні: ховає форму назад -->
+                            <button type="button" class="btn btn-outline add-cancel" data-close-form="match-box">Скасувати</button>
+                            <button type="submit" class="btn btn-accent">Створити матч</button>
+                        </div>
+                    </form>
+                </fieldset>
+                <div id="match-message" class="message admin-only"></div>
+
+                <!-- Фільтр списку -->
+                <div class="filter-tabs">
+                    <button type="button" class="filter-tab matches-tab active" data-filter="all" aria-pressed="true">Усі</button>
+                    <button type="button" class="filter-tab matches-tab" data-filter="scheduled" aria-pressed="false">Заплановані</button>
+                    <button type="button" class="filter-tab matches-tab" data-filter="finished" aria-pressed="false">Зіграні</button>
+                </div>
+
+                <!-- Рядки матчів -->
+                <div id="matches-list" class="matches-list"></div>
+            </section>
+
+            <!-- РОЗДІЛ "КОМАНДИ" -->
+            <section id="section-teams" class="page-section" hidden>
+                <div class="section-head">
+                    <h1 class="section-title">Команди</h1>
+                    <span id="teams-count" class="section-count"></span>
+                </div>
+
+                <button type="button" class="add-toggle admin-only" data-open-form="team-box">
+                    <span class="plus" aria-hidden="true">+</span> Додати команду
+                </button>
+
+                <fieldset id="team-box" class="form-box mobile-collapsible admin-only">
+                    <legend>Додати команду</legend>
+                    <form id="team-form" class="form-grid form-grid-inline">
+                        <label class="field">
+                            <span class="field-label">Назва</span>
+                            <input type="text" id="team-name" required>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Місто</span>
+                            <input type="text" id="team-city" required>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Рік заснування</span>
+                            <input type="number" id="team-founded-year" min="1900" max="2100" required>
+                        </label>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline add-cancel" data-close-form="team-box">Скасувати</button>
+                            <button type="submit" class="btn btn-accent">Додати</button>
+                        </div>
+                    </form>
+                </fieldset>
+                <div id="team-message" class="message admin-only"></div>
+
+                <!-- Фільтр карток. Вигляд — як у вкладок матчів -->
+                <div class="filter-tabs">
+                    <button type="button" class="filter-tab teams-tab active" data-filter="tournament" aria-pressed="true">У турнірі</button>
+                    <button type="button" class="filter-tab teams-tab" data-filter="all" aria-pressed="false">Усі команди</button>
+                </div>
+
+                <!-- Картки команд -->
+                <div id="teams-grid" class="card-grid teams-grid"></div>
+            </section>
+
+            <!-- РОЗДІЛ "ГРАВЦІ" -->
+            <section id="section-players" class="page-section" hidden>
+                <div class="section-head">
+                    <h1 class="section-title">Гравці</h1>
+                    <span id="players-count" class="section-count"></span>
+                </div>
+
+                <button type="button" class="add-toggle admin-only" data-open-form="player-box">
+                    <span class="plus" aria-hidden="true">+</span> Додати гравця
+                </button>
+
+                <!-- Одна рамка "Додати гравця", всередині дві форми: один гравець і імпорт з CSV -->
+                <fieldset id="player-box" class="form-box mobile-collapsible admin-only">
+                    <legend>Додати гравця</legend>
+                    <form id="player-form" class="form-grid">
+                        <label class="field">
+                            <span class="field-label">Ім'я</span>
+                            <input type="text" id="player-first-name" required>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Прізвище</span>
+                            <input type="text" id="player-last-name" required>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Позиція</span>
+                            <select id="player-position" required>
+                                <option value="">— оберіть —</option>
+                                <option value="Воротар">воротар</option>
+                                <option value="Захисник">захисник</option>
+                                <option value="Нападник">нападник</option>
+                            </select>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Номер</span>
+                            <input type="number" id="player-number" min="1" max="99" required>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Команда</span>
+                            <select id="player-team" required>
+                                <option value="">— оберіть —</option>
+                            </select>
+                        </label>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline add-cancel" data-close-form="player-box">Скасувати</button>
+                            <button type="submit" class="btn btn-accent">Додати</button>
+                        </div>
+                    </form>
+                    <div id="player-message" class="message"></div>
+
+                    <!-- Імпорт з CSV — окрема форма, бо відправляє файл -->
+                    <form id="import-form" class="import-form">
+                        <span class="form-title">або з CSV:</span>
+                        <select id="import-team" required aria-label="Команда для імпорту">
+                            <option value="">— команда —</option>
+                        </select>
+                        <!-- accept=".csv" — у вікні вибору файлу показуються тільки CSV -->
+                        <input type="file" id="import-file" accept=".csv" required aria-label="CSV-файл">
+                        <small class="hint">first_name, last_name, position, shirt_number</small>
+                        <button type="submit" class="btn">Імпортувати</button>
+                    </form>
+                    <div id="import-message" class="message"></div>
+                </fieldset>
+
+                <!-- Вкладки: за замовчуванням — тільки гравці
+                     команд, що грають в обраному турнірі. Вигляд — як у вкладок матчів -->
+                <div class="filter-tabs">
+                    <button type="button" class="filter-tab players-tab active" data-filter="tournament" aria-pressed="true">У турнірі</button>
+                    <button type="button" class="filter-tab players-tab" data-filter="all" aria-pressed="false">Усі гравці</button>
+                </div>
+
+                <!-- Фільтр за командою видно всім (це лише перегляд, не зміна даних) -->
+                <div class="filter-row">
+                    <label for="players-filter">Команда:</label>
+                    <select id="players-filter">
+                        <option value="">усі команди</option>
+                    </select>
+                </div>
+
+                <div class="table-box players-box">
+                    <table class="players-table">
+                        <thead>
+                            <tr>
+                                <th class="col-number">№</th>
+                                <th>Гравець</th>
+                                <th class="hide-mobile">Позиція</th>
+                                <th class="hide-mobile">Команда</th>
+                                <th class="cell-actions admin-only">Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="players-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- РОЗДІЛ "УСІ ТУРНІРИ" -->
+            <section id="section-tournaments" class="page-section" hidden>
+                <div class="section-head">
+                    <h1 class="section-title">Турніри</h1>
+                    <span id="tournaments-count" class="section-count"></span>
+                </div>
+
+                <!-- collapsible — форма схована завжди, поки не натиснути картку "+ Новий турнір" -->
+                <fieldset id="tournament-box" class="form-box collapsible admin-only">
+                    <legend>Новий турнір</legend>
+                    <form id="tournament-form" class="form-grid">
+                        <label class="field">
+                            <span class="field-label">Назва</span>
+                            <input type="text" id="tournament-name" placeholder="ЧУ 26/27 | Жінки" required>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Рік</span>
+                            <input type="number" id="tournament-year" min="2000" max="2100" required>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Початок</span>
+                            <input type="date" id="tournament-start" required>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Кінець</span>
+                            <input type="date" id="tournament-end" required>
+                        </label>
+                        <p class="hint form-hint">Категорію відділяйте вертикальною рискою з пробілами: « | » (Shift + \)</p>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" data-close-form="tournament-box">Скасувати</button>
+                            <button type="submit" class="btn btn-accent">Створити турнір</button>
+                        </div>
+                    </form>
+                </fieldset>
+                <div id="tournament-message" class="message admin-only"></div>
+
+                <!-- турнірів немає взагалі -->
+                <p id="tournaments-empty" class="empty-text" hidden>Турнірів ще немає. Адміністратор може створити перший турнір.</p>
+
+                <div class="card-grid tournaments-grid">
+                    <!-- Картка "+ Новий турнір" (тільки адміністратор) — відкриває форму вище -->
+                    <button type="button" id="new-tournament-card" class="add-card admin-only" data-open-form="tournament-box">
+                        <span class="plus" aria-hidden="true">+</span>
+                        <span class="add-card-title">Новий турнір</span>
+                        <span class="add-card-hint">назва, рік, дата початку й кінця</span>
+                    </button>
+                    <!-- Картки турнірів.
+                         display: contents — картки стають частиною тієї самої сітки -->
+                    <div id="tournaments-list" class="grid-contents"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="site-footer"></footer>
+</div>
+
+<!-- МОДАЛЬНЕ ВІКНО: ВХІД АДМІНІСТРАТОРА -->
+<!-- <dialog> — стандартний HTML-елемент для вікна поверх сторінки -->
+<dialog id="login-dialog" class="modal" aria-labelledby="login-title">
+    <div class="modal-head">
+        <h2 id="login-title">Вхід для адміністратора</h2>
+        <button type="button" id="login-close" class="modal-close" aria-label="Закрити">×</button>
+    </div>
+    <form id="login-form" class="modal-body">
+        <p class="modal-text">Адміністратор може додавати турніри, команди, гравців і матчі та вносити рахунок.</p>
+        <label class="field">
+            <span class="field-label">Логін</span>
+            <input type="text" id="login-username" autocomplete="username" required>
+        </label>
+        <label class="field">
+            <span class="field-label">Пароль</span>
+            <input type="password" id="login-password" autocomplete="current-password" required>
+        </label>
+        <p id="login-error" class="field-error" aria-live="polite"></p>
+        <div class="modal-actions">
+            <button type="button" id="login-cancel" class="btn btn-outline modal-cancel">Скасувати</button>
+            <button type="submit" class="btn btn-dark">Увійти</button>
+        </div>
+    </form>
+</dialog>
+
+<!-- МОДАЛЬНЕ ВІКНО: РАХУНОК МАТЧУ -->
+<dialog id="score-dialog" class="modal" aria-labelledby="score-title">
+    <div class="modal-head">
+        <h2 id="score-title">Рахунок матчу</h2>
+        <button type="button" id="score-close" class="modal-close" aria-label="Закрити">×</button>
+    </div>
+    <form id="score-form" class="modal-body">
+        <p class="modal-text">Після збереження матч отримає статус «Зіграно», а очки з'являться в турнірній таблиці.</p>
+        <div class="score-fields">
+            <label class="field">
+                <span class="field-label" id="score-home-name">Господарі</span>
+                <input type="number" id="score-home" class="score-input" min="0" required>
+            </label>
+            <span class="score-colon" aria-hidden="true">:</span>
+            <label class="field">
+                <span class="field-label" id="score-away-name">Гості</span>
+                <input type="number" id="score-away" class="score-input" min="0" required>
+            </label>
+        </div>
+        <div class="modal-actions">
+            <button type="button" id="score-cancel" class="btn btn-outline modal-cancel">Скасувати</button>
+            <button type="submit" class="btn btn-accent">Зберегти</button>
+        </div>
+    </form>
+</dialog>
+
+<!-- ПІДКЛЮЧЕННЯ СКРИПТІВ -->
+<script src="/static/common.js"></script>
+<script src="/static/auth.js"></script>
+<script src="/static/navigation.js"></script> 
+<script src="/static/tournaments.js"></script>
+<script src="/static/teams.js"></script>
+<script src="/static/players.js"></script>
+<script src="/static/matches.js"></script>
+<script src="/static/main.js"></script>
+</body>
+</html>

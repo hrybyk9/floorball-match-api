@@ -1,0 +1,1541 @@
+
+
+/* 1. Змінні (кольори, шрифти, рамки) */
+:root {
+    --color-bg: #f6f3ec;        /* фон сторінки */
+    --color-text: #1a1a1a;      /* основний текст, рамки, шапки таблиць */
+    --color-accent: #c23b12;    /* акцент: "Очки", кнопки дій, мітка організатора */
+    --color-muted: #57534c;     /* для другорядного тексту */
+    --color-line: #d9d4c7;      /* світлі лінії між рядками */
+    --color-top3: #f1e3d9;      /* затінення перших трьох місць */
+    --color-white: #ffffff;     /* фон таблиць, карток і полів */
+
+    --font-text: "Fira Sans", Arial, sans-serif;                          /* звичайний текст */
+    --font-head: "Fira Sans Extra Condensed", "Arial Narrow", sans-serif; /* заголовки, назви команд */
+    --font-mono: "Fira Mono", "Courier New", monospace;                   /* рахунки, дати, цифри */
+
+    --border: 2px solid var(--color-text);   /* стандартна чорна рамка */
+    --hard-shadow: 6px 6px 0 var(--color-text); /* "жорстка" тінь без розмиття */
+}
+
+/* box-sizing: border-box — padding і рамка не збільшують ширину елемента */
+* {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-text);
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+/* Обгортка всієї сторінки: обмежуємо ширину і ставимо по центру */
+.page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px;
+}
+
+/* 2. РОЗМЕЖУВАННЯ ПРАВ */
+/* Поки в <body> НЕМАЄ класу organizer-mode — ховаємо все, що для організатора */
+body:not(.organizer-mode) .admin-only {
+    display: none !important;
+}
+/* Коли організатор увійшов — ховаємо те, що тільки для відвідувача (кнопку "Увійти") */
+body.organizer-mode .visitor-only {
+    display: none !important;
+}
+
+/* 3. Показ лише на комп'ютері / лише на телефоні  */
+.only-mobile {
+    display: none;
+}
+
+/* 4. Кнопки і посилання */
+button {
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;                  /* курсор-"рука" при наведенні */
+    border-radius: 0;                
+}
+
+/* Звичайна кнопка: біла з чорною рамкою */
+.btn {
+    padding: 9px 16px;
+    border: var(--border);
+    background: var(--color-white);
+    color: var(--color-text);
+    font-weight: 700;
+}
+/* @media (hover: hover) — підсвічування лише там, де є мишка.
+   На телефоні після дотику :hover "залипає", і кнопка лишалась би перефарбованою */
+@media (hover: hover) {
+    .btn:hover {
+        background: var(--color-text);
+        color: var(--color-bg);
+    }
+    .btn-dark:hover {
+        background: var(--color-white);
+        color: var(--color-text);
+    }
+    .btn-accent:hover {
+        background: var(--color-text);
+        color: var(--color-white);
+    }
+}
+
+/* Чорна кнопка ("Увійти", "Обраний") */
+.btn-dark {
+    background: var(--color-text);
+    color: var(--color-bg);
+}
+
+/* Акцентна кнопка (створити, зберегти, додати) */
+.btn-accent {
+    background: var(--color-accent);
+    color: var(--color-white);
+}
+
+/* Прозора кнопка з рамкою ("Вийти", "Скасувати") */
+.btn-outline {
+    background: transparent;
+}
+
+/* Кнопка, що виглядає як підкреслене посилання ("змінити турнір", "усі матчі турніру") */
+.link-button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-accent);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* Помітна рамка фокусу для керування з клавіатури (Tab) */
+:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* Квадратні кнопки-іконки */
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid var(--color-text);
+    background: var(--color-white);
+    color: var(--color-text);         /* колір SVG-іконки = currentColor */
+}
+.icon-button:hover {
+    background: var(--color-text);
+    color: var(--color-white);
+}
+/* Кнопка видалення — акцентна рамка й іконка */
+.icon-delete {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+.icon-delete:hover {
+    background: var(--color-accent);
+    color: var(--color-white);
+}
+
+/* 5. Шапка */
+.site-header {
+    padding-top: 24px;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;  /* назва зліва, кнопки справа */
+    align-items: flex-end;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 5px solid var(--color-text); /* товста лінія під назвою */
+}
+
+.brand {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.brand-title {
+    font-family: var(--font-head);
+    font-size: 46px;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;     
+    letter-spacing: -0.5px;
+}
+.brand-subtitle {
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.user-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.role-badge {
+    color: var(--color-muted);
+    font-size: 13px;
+}
+/* Організатор: червона мітка */
+body.organizer-mode .role-badge {
+    padding: 3px 8px;
+    background: var(--color-accent);
+    color: var(--color-white);
+    font-weight: 700;
+}
+
+/* Рядок "Турнір: … · дати · змінити турнір" */
+.tournament-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 2px solid var(--color-muted);
+    font-size: 13px;
+}
+.tournament-dates {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+/* Тонка лінія внизу сторінки */
+.site-footer {
+    margin-bottom: 32px;
+    border-top: 2px solid var(--color-muted);
+}
+
+/* 6. Сітка сторінки: меню зліва, розділ праворуч */
+.layout {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);  /* minmax(0, …) — щоб широка таблиця не розпирала сітку */
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+        "nav  content"
+        "next content";
+    column-gap: 28px;
+    padding: 24px 0 40px;
+}
+.section-nav {
+    grid-area: nav;
+}
+.next-game {
+    grid-area: next;
+    align-self: start;
+}
+.content {
+    grid-area: content;
+    min-width: 0;
+}
+
+/* Меню розділів */
+.nav-title {
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--color-muted);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 0;
+    border: none;
+    border-bottom: 1px solid var(--color-line);
+    background: none;
+    color: var(--color-text);
+    font-size: 14px;
+    text-align: left;
+}
+/* Квадратик перед пунктом меню (::before — "намальований" CSS елемент) */
+.nav-link::before {
+    content: "";
+    flex-shrink: 0;
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--color-muted);
+}
+.nav-link:hover {
+    color: var(--color-accent);
+}
+/* Активний пункт: жирний текст і зафарбований квадратик */
+.nav-link.active {
+    font-weight: 700;
+}
+.nav-link.active::before {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+}
+
+/* Блок "Наступна гра" */
+.next-game {
+    margin-top: 18px;
+    padding: 12px;
+    border: var(--border);
+    background: var(--color-white);
+}
+.next-game-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.next-game-teams {
+    margin: 6px 0;
+    font-family: var(--font-head);
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+.next-game-when {
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+.next-game-venue {
+    margin-top: 2px;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+/* 7. Заголовки розділів */
+.section-head {
+    display: flex;
+    justify-content: space-between;  /* заголовок зліва, лічильник справа */
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.section-title {
+    margin: 0;
+    font-family: var(--font-head);
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+}
+.section-count {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+/* Малий заголовок блоку ("Результати") */
+.block-title {
+    margin: 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--color-muted);
+    font-family: var(--font-head);
+    font-size: 19px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Підказка "немає даних" */
+.empty-text {
+    margin: 0;
+    padding: 16px 0;
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+/* 8. Форми організатора */
+/* <fieldset> з чорною рамкою, <legend> — назва форми на рамці */
+.form-box {
+    min-width: 0;                  
+    margin: 0 0 18px;
+    padding: 12px 14px 14px;
+    border: var(--border);
+    background: var(--color-white);
+}
+.form-box legend {
+    padding: 0 6px;
+    font-family: var(--font-head);
+    font-size: 19px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+/* Форма турніру схована, поки не натиснули "+ Новий турнір"*/
+.form-box.collapsible:not(.open) {
+    display: none;
+}
+
+/* Поля в сітку: скільки вміщається в рядок, кожне не вужче за 150px */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+/* Поле з підписом зверху */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+}
+/* Рядок кнопок під полями, відокремлений пунктиром */
+.form-actions {
+    grid-column: 1 / -1;             /* на всю ширину сітки */
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--color-line);
+}
+/* Коротка форма (команда): кнопка в тому самому рядку, що й поля */
+.form-grid-inline {
+    grid-template-columns: 2fr 2fr 1.3fr auto;
+}
+.form-grid-inline .form-actions {
+    grid-column: auto;
+    padding-top: 0;
+    border-top: none;
+}
+.form-hint {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+/* "Скасувати" у формах потрібне тільки на телефоні */
+.add-cancel {
+    display: none;
+}
+
+input,
+select {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--color-text);
+    border-radius: 0;
+    background: var(--color-white);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 14px;
+}
+input::placeholder {
+    color: var(--color-muted);
+}
+/* Дати і числа — моноширинним шрифтом */
+input[type="date"],
+input[type="datetime-local"],
+input[type="number"] {
+    font-family: var(--font-mono);
+}
+
+/* Імпорт з CSV — один рядок під пунктиром */
+.import-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--color-line);
+}
+.import-form select,
+.import-form input[type="file"] {
+    width: auto;
+}
+.form-title {
+    font-size: 13px;
+    font-weight: 700;
+}
+/* Поле файлу: без рамки */
+input[type="file"] {
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+}
+input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 10px;
+    border: 1px solid var(--color-text);
+    background: var(--color-bg);
+    font-family: inherit;
+    cursor: pointer;
+}
+.hint {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+
+/* Повідомлення "Команду додано!" / "Помилка: …" */
+.message {
+    margin: -8px 0 14px;
+    font-size: 13px;
+    font-weight: 700;
+}
+.message:empty {
+    display: none;                   /* порожнє повідомлення не займає місця */
+}
+/* Повідомлення всередині рамки форми (розділ "Гравці": після форми гравця і після імпорту CSV).
+   Звичайний .message має від'ємний відступ зверху — він для повідомлень під рамкою.
+   Усередині рамки такий відступ накладає текст на кнопку, тому тут — звичайний відступ */
+.form-box .message {
+    margin: 10px 0 0;
+}
+.error {
+    color: var(--color-accent);
+}
+.success {
+    color: var(--color-text);
+}
+
+/* Широка пунктирна кнопка "+ Додати…" (видно тільки на телефоні, розділ 12) */
+.add-toggle {
+    display: none;
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 2px dashed var(--color-text);
+    background: transparent;
+    font-size: 15px;
+    font-weight: 700;
+}
+.plus {
+    color: var(--color-accent);
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* Кнопки "Скасувати / Зберегти" в режимі редагування картки */
+.edit-actions {
+    display: flex;
+    flex-wrap: wrap;                 /* у вузькій картці кнопки переносяться, а не вилазять */
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+.edit-actions .btn {
+    flex: 1 1 auto;
+    padding: 9px 10px;
+}
+
+/* 9. Таблиці */
+/* Рамка навколо таблиці; overflow-x — прокрутка вбік, якщо таблиця не вміщається */
+.table-box {
+    overflow-x: auto;
+    border: var(--border);
+    background: var(--color-white);
+}
+table {
+    width: 100%;
+    border-collapse: collapse;    
+}
+/* Чорна шапка таблиці */
+th {
+    padding: 9px 10px;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-align: left;
+    text-transform: uppercase;
+}
+td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--color-line);
+    font-size: 14px;
+}
+tbody tr:last-child td {
+    border-bottom: none;
+}
+/* Рядок-підказка "Оберіть турнір" / "Гравців ще немає" */
+tbody tr.empty-row td {
+    padding: 18px;
+    color: var(--color-muted);
+    font-style: italic;
+    text-align: center;
+}
+
+/* Турнірна таблиця */
+.standings-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 170px; /* таблиця + колонка "Результати" */
+    gap: 24px;
+    align-items: start;
+}
+.standings-table .col-pos {
+    width: 36px;
+}
+.standings-table .num {
+    width: 44px;
+    font-family: var(--font-mono);
+    text-align: center;
+}
+.standings-table th.num {
+    font-family: var(--font-head);  /* у шапці — заголовний шрифт, у рядках — цифри Fira Mono */
+}
+.standings-table .col-gd {
+    width: 56px;
+}
+.standings-table .col-points {
+    width: 70px;
+    font-size: 15px;
+    font-weight: 700;
+}
+/* Колонка "Очки" в шапці — з акцентом */
+.standings-table th.col-points {
+    background: var(--color-accent);
+    color: var(--color-white);
+    font-size: 13px;
+}
+/* Перші три місця затінені */
+.standings-table tr.top-three {
+    background: var(--color-top3);
+}
+.team-name {
+    font-weight: 700;
+}
+.team-city {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+/* " · " між назвою і містом (на телефоні прибирається, місто йде другим рядком) */
+.team-city::before {
+    content: " · ";
+}
+.table-note {
+    margin: 8px 0 0;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+/* Таблиця гравців */
+.players-table .col-number {
+    width: 54px;
+}
+.player-number {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+}
+.player-name {
+    font-weight: 700;
+}
+/* Рядок "воротар · Lemberg" під ім'ям — тільки на телефоні */
+.player-sub {
+    display: none;
+}
+.player-position {
+    text-transform: lowercase;       /* "Воротар" -> "воротар", як у макеті */
+}
+.player-team {
+    color: var(--color-muted);
+}
+.cell-actions {
+    text-align: right;
+    white-space: nowrap;             /* кнопки не переносяться на новий рядок */
+}
+.cell-actions > * + * {
+    margin-left: 6px;                /* відстань між кнопками */
+}
+/* Рядок гравця в режимі редагування */
+.edit-row td {
+    vertical-align: top;
+}
+.edit-name-cell input + input {
+    margin-top: 6px;
+}
+
+/* Фільтр гравців "Команда: …" */
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.filter-row label {
+    font-size: 13px;
+    font-weight: 700;
+}
+.filter-row select {
+    width: auto;
+    border-width: 2px;
+}
+
+/* 10. Перемикач "Зараз тривають", "Результати", матчі */
+.running-switcher {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+.switcher-label {
+    font-size: 13px;
+    font-weight: 700;
+}
+/* Кнопки стоять впритул в одну смугу; на комп'ютері переносяться на новий рядок */
+.switch-buttons {
+    display: flex;
+    flex-wrap: wrap;
+}
+.switch-button {
+    padding: 9px 14px;
+    border: var(--border);
+    background: var(--color-white);
+    color: var(--color-text);
+    font-size: 13px;
+}
+/* margin-left: -2px — рамки сусідніх кнопок накладаються, і лінія не подвоюється */
+.switch-button + .switch-button {
+    margin-left: -2px;
+}
+.switch-button.active {
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-weight: 700;
+}
+
+/* Блок "Результати" */
+.result-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-muted);
+}
+.result-date {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+/* Три частини: господарі | рахунок | гості */
+.result-line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 700;
+}
+.result-team {
+    overflow: hidden;
+    text-overflow: ellipsis;         /* довга назва обрізається трикрапкою */
+    white-space: nowrap;
+}
+.result-away {
+    text-align: right;
+}
+.result-score {
+    padding: 2px 6px;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-family: var(--font-mono);
+}
+.results-box .link-button {
+    margin-top: 10px;
+}
+
+/* Вкладки "Усі / Заплановані / Зіграні" */
+.filter-tabs {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+.filter-tab {
+    padding: 2px 0;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--color-muted);
+    font-size: 13px;
+}
+.filter-tab.active {
+    border-bottom-color: var(--color-accent);
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+/* Список матчів */
+.matches-list {
+    border-top: var(--border);
+}
+/* Рядок матчу — сітка з "іменованими областями" (grid-template-areas):
+   так на телефоні можна переставити ті самі частини, не змінюючи HTML */
+.match-row {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr) 64px minmax(0, 1fr) 170px auto;
+    grid-template-areas:
+        "date home score away status actions"
+        "date home score away venue  actions";
+    align-items: center;
+    column-gap: 12px;
+    padding: 10px 0;
+    border-bottom: var(--border);
+}
+.match-date {
+    grid-area: date;
+    font-family: var(--font-mono);
+}
+.match-day {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+}
+.match-time {
+    display: block;
+    color: var(--color-muted);
+    font-size: 11px;
+}
+.match-team {
+    overflow: hidden;
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.match-home {
+    grid-area: home;
+    text-align: right;               /* господарі притиснуті до рахунку */
+}
+.match-away {
+    grid-area: away;
+}
+/* Рахунок у чорному блоці */
+.match-score {
+    grid-area: score;
+    padding: 5px 0;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+}
+/* Запланований матч: пунктирна рамка "–:–" */
+.match-score.empty {
+    padding: 3px 0;
+    border: 2px dashed var(--color-text);
+    background: transparent;
+    color: var(--color-text);
+}
+.match-status {
+    grid-area: status;
+    align-self: end;
+    font-size: 12px;
+    font-weight: 700;
+}
+/* Заплановані й поточні — акцентом, зіграні — чорним */
+.match-status.status-scheduled,
+.match-status.status-live {
+    color: var(--color-accent);
+}
+.match-venue {
+    grid-area: venue;
+    align-self: start;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+.match-actions {
+    grid-area: actions;
+    display: flex;
+    gap: 6px;
+}
+/* Кнопка внесення рахунку ("0:0" на комп'ютері) */
+.score-button {
+    min-width: 40px;
+    height: 30px;
+    padding: 0 6px;
+    border: 1px solid var(--color-text);
+    background: var(--color-white);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+}
+.score-button:hover {
+    background: var(--color-text);
+    color: var(--color-white);
+}
+/* Матч у режимі редагування — звичайний блок з формою */
+.match-row.edit-mode {
+    display: block;
+    padding: 12px;
+    background: var(--color-white);
+}
+
+/* 11. Картки (команди, турніри) і модальні вікна  */
+/* Сітка карток: скільки вміщається, кожна не вужча за 150px */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+.tournaments-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+}
+/* Обгортка, яка "зникає": її нащадки стають елементами сітки .card-grid */
+.grid-contents {
+    display: contents;
+}
+.card-actions {
+    display: flex;
+    gap: 4px;
+}
+.card-actions .icon-button {
+    width: 26px;
+    height: 26px;
+}
+
+/* Картка команди */
+.team-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "name  side"
+        "meta  meta"
+        "stats stats";
+    align-content: start;            /* вміст притиснутий догори, навіть якщо картка вища */
+    column-gap: 8px;
+    padding: 10px 10px 12px;
+    border: var(--border);
+    background: var(--color-white);
+}
+.team-card-name {
+    grid-area: name;
+    margin: 0;
+    font-family: var(--font-head);
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.1;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;         /* довга назва переноситься, а не вилазить за картку */
+}
+.team-card-side {
+    grid-area: side;
+    display: flex;
+    align-items: center;
+    align-self: start;
+    gap: 8px;
+}
+/* "1 місце" праворуч — тільки на телефоні */
+.team-card-place {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+.team-card-meta {
+    grid-area: meta;
+    margin-top: 4px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--color-muted);
+    color: var(--color-muted);
+    font-size: 12px;
+}
+.team-card-stats {
+    grid-area: stats;
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+/* Картка в режимі редагування — поля одне під одним */
+.edit-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Картка турніру */
+.tournament-card {
+    display: flex;
+    flex-direction: column;
+    border: var(--border);
+    background: var(--color-white);
+}
+/* Обраний турнір — "жорстка" тінь без розмиття */
+.tournament-card.selected {
+    box-shadow: var(--hard-shadow);
+}
+/* Смуга зі статусом */
+.tournament-band {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    padding: 4px 8px 4px 10px;
+    background: var(--color-line);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.status-running .tournament-band {
+    background: var(--color-accent);
+    color: var(--color-white);
+}
+.status-scheduled .tournament-band {
+    background: var(--color-text);
+    color: var(--color-bg);
+}
+/* На темній смузі кнопки  — редагувати і видалити прозорі зі світлою рамкою */
+.status-running .tournament-band .icon-button,
+.status-scheduled .tournament-band .icon-button {
+    border-color: var(--color-bg);
+    background: transparent;
+    color: var(--color-bg);
+}
+.tournament-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+}
+.tournament-title {
+    margin: 0;
+    font-family: var(--font-head);
+    font-size: 23px;
+    font-weight: 800;
+    line-height: 1.05;
+    text-transform: uppercase;
+}
+.tournament-dates-line {
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+.tournament-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: auto;                /* притискаємо кнопку до низу картки */
+}
+.tournament-counts {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+.choose-button {
+    width: 100%;
+}
+
+/* Пунктирна картка "+ Новий турнір" */
+.add-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    min-height: 150px;
+    padding: 16px;
+    border: 2px dashed var(--color-text);
+    background: transparent;
+    color: var(--color-text);
+}
+.add-card:hover {
+    background: var(--color-white);
+}
+.add-card .plus {
+    font-size: 30px;
+}
+.add-card-title {
+    font-family: var(--font-head);
+    font-size: 19px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.add-card-hint {
+    color: var(--color-muted);
+    font-size: 11px;
+}
+
+/* Модальні вікна (<dialog>) */
+.modal {
+    width: min(420px, calc(100% - 32px)); /* не ширше 420px і не ширше за екран */
+    padding: 0;
+    border: var(--border);
+    background: var(--color-bg);
+    color: var(--color-text);
+    box-shadow: var(--hard-shadow);
+}
+/* ::backdrop — напівпрозоре затемнення сторінки за вікном (без розмиття) */
+.modal::backdrop {
+    background: rgba(26, 26, 26, 0.5);
+}
+.modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--color-text);
+    color: var(--color-bg);
+}
+.modal-head h2 {
+    margin: 0;
+    font-family: var(--font-head);
+    font-size: 19px;
+    text-transform: uppercase;
+}
+.modal-close {
+    padding: 0 4px;
+    border: none;
+    background: none;
+    color: var(--color-bg);
+    font-size: 24px;
+    line-height: 1;
+}
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+}
+.modal-text {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 13px;
+}
+.field-error {
+    min-height: 18px;
+    margin: 0;
+    color: var(--color-accent);
+    font-size: 12px;
+    font-weight: 700;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+/* Вікно рахунку: два поля і двокрапка між ними */
+.score-fields {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+.score-fields .field {
+    flex: 1;
+}
+.score-colon {
+    padding-bottom: 6px;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 700;
+}
+.score-input {
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* 12. ТЕЛЕФОН (екран до 768px)*/
+@media (max-width: 768px) {
+    /* Показ лише на комп'ютері / лише на телефоні */
+    .only-desktop,
+    .only-desktop-block,
+    .hide-mobile {
+        display: none;
+    }
+    .only-mobile {
+        display: inline;
+    }
+
+    .page {
+        padding: 0 16px;
+    }
+
+    /* Шапка */
+    .site-header {
+        padding-top: 16px;
+    }
+    .header-top {
+        align-items: center;
+        border-bottom-width: 4px;
+    }
+    .brand-title {
+        font-size: 32px;
+    }
+    .user-box .btn {
+        padding: 8px 12px;
+    }
+    body.organizer-mode .role-badge {
+        font-size: 12px;
+    }
+    .brand-subtitle,
+    .tournament-dates {
+        display: none;
+    }
+    /* Відвідувачу на телефоні — тільки кнопка "Увійти", без напису */
+    body:not(.organizer-mode) .role-badge {
+        display: none;
+    }
+    .user-box {
+        gap: 8px;
+    }
+    .tournament-bar {
+        justify-content: space-between;
+        border-bottom: 1px solid var(--color-text);
+    }
+
+    /* Сітка: одна колонка; меню — зверху, "Наступна гра" — під розділом */
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+        grid-template-areas:
+            "nav"
+            "content"
+            "next";
+        padding-top: 0;
+    }
+
+    /* Меню розділів -> вкладки текстом з прокруткою вбік */
+    .section-nav {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 18px;
+        overflow-x: auto;                /* не вміщається — гортаємо пальцем вбік */
+        border-bottom: 1px solid var(--color-muted);
+        scrollbar-width: none;           /* ховаємо смугу прокрутки (Firefox) */
+    }
+    .nav-title {
+        display: none;
+    }
+    .nav-link {
+        flex-shrink: 0;
+        width: auto;
+        padding: 10px 0 8px;
+        border-bottom: 3px solid transparent;
+        font-size: 15px;
+        white-space: nowrap;
+    }
+    .nav-link::before {
+        display: none;                   /* без квадратиків */
+    }
+    .nav-link.active {
+        border-bottom-color: var(--color-accent);
+    }
+
+    /* "Наступна гра" на телефоні — тільки на сторінці таблиці */
+    body:not([data-section="standings"]) .next-game {
+        display: none;
+    }
+    .next-game {
+        margin-top: 18px;
+    }
+
+    /* Заголовки */
+    .section-title {
+        font-size: 32px;
+    }
+    .section-count {
+        display: none;
+    }
+
+    /* Перемикач: підпис над кнопками, кнопки прокручуються вбік */
+    .running-switcher {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        margin-bottom: 18px;
+    }
+    .switch-buttons {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+    .switch-button {
+        flex: 1 0 140px;                 /* дві кнопки — по половині, більше — прокрутка */
+        padding: 11px 10px;
+    }
+
+    /* Турнірна таблиця: вміщуємо всі 10 колонок */
+    .standings-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .standings-table {
+        table-layout: fixed;             /* ширини колонок — як задано, а не за вмістом */
+    }
+    .standings-table th,
+    .standings-table td {
+        padding: 8px 2px;
+        font-size: 12px;
+    }
+    .standings-table th {
+        font-size: 11px;
+    }
+    .standings-table .col-pos {
+        width: 20px;
+        padding-left: 6px;
+    }
+    .standings-table .num {
+        width: 24px;
+    }
+    .standings-table .col-gd {
+        width: 30px;
+    }
+    .standings-table .col-points,
+    .standings-table th.col-points {
+        width: 28px;
+        font-size: 13px;
+    }
+    /* Назва команди — в один рядок з трикрапкою, місто — другим рядком */
+    .team-name,
+    .team-city {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .team-city {
+        font-size: 10px;
+    }
+    .team-city::before {
+        content: none;
+    }
+    .results-box {
+        margin-top: 8px;
+    }
+
+    /* Форми: сховані за кнопкою "+ Додати…" */
+    .add-toggle {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-box.mobile-collapsible:not(.open) {
+        display: none;
+    }
+    .add-cancel {
+        display: inline-block;
+    }
+    .form-grid,
+    .form-grid-inline {
+        grid-template-columns: minmax(0, 1fr); /* поля одне під одним */
+    }
+    .form-actions,
+    .form-grid-inline .form-actions {
+        grid-column: 1 / -1;
+        padding-top: 0;
+        border-top: none;
+    }
+    .form-actions .btn {
+        flex: 1;                         /* "Скасувати" і "Зберегти" — по половині */
+        padding: 12px;
+    }
+    .import-form select,
+    .import-form input[type="file"] {
+        width: 100%;
+    }
+
+    /* Матчі -> картки: ті самі частини, інший порядок */
+    .match-row {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-areas:
+            "date    date    status"
+            "home    score   away"
+            "venue   venue   venue"
+            "actions actions actions";
+        row-gap: 8px;
+        column-gap: 10px;
+        padding: 12px 0;
+    }
+    .match-day,
+    .match-time {
+        display: inline;
+        color: var(--color-text);
+        font-size: 12px;
+        font-weight: 400;
+    }
+    .match-time::before {
+        content: " · ";
+    }
+    .match-home {
+        text-align: left;
+    }
+    .match-away {
+        text-align: right;
+    }
+    .match-score {
+        width: 64px;
+    }
+    .match-status {
+        align-self: center;
+        justify-self: end;
+    }
+    .match-actions {
+        gap: 8px;
+    }
+    .score-button {
+        flex: 1;                         /* широка кнопка "Внести рахунок" */
+        height: 40px;
+        font-family: var(--font-text);
+        font-size: 14px;
+    }
+    .match-actions .icon-button,
+    .card-actions .icon-button,
+    .cell-actions .icon-button {
+        width: 40px;                     /* більші кнопки — зручніше влучати пальцем */
+        height: 40px;
+    }
+
+    /* Команди -> картки одна під одною: назва і місто зліва, місце/кнопки справа */
+    .teams-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .team-card {
+        grid-template-areas:
+            "name side"
+            "meta side";
+        align-items: center;
+        padding: 10px 12px;
+    }
+    .team-card-meta {
+        margin-top: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    .team-card-stats {
+        display: none;
+    }
+    .team-card-place {
+        display: inline;
+    }
+    body.organizer-mode .team-card-place {
+        display: none;                   /* в організатора на цьому місці кнопки */
+    }
+
+    /* Гравці: без шапки таблиці й рамки; кожен рядок — маленька сітка
+       "номер | ім'я + позиція·команда | кнопки" (display: grid замість звичайного рядка таблиці) */
+    .players-box {
+        border: none;
+        border-top: 1px solid var(--color-text);
+        background: transparent;
+    }
+    .players-table thead {
+        display: none;
+    }
+    .players-table,
+    .players-table tbody {
+        display: block;
+    }
+    .players-table tr {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr) auto;
+        align-items: center;
+        border-bottom: 1px solid var(--color-muted);
+    }
+    .players-table td {
+        display: block;
+        padding: 10px 4px;
+        border-bottom: none;
+    }
+    .players-table td.hide-mobile {
+        display: none;               /* позиція й команда — у рядку під ім'ям */
+    }
+    .players-table .empty-row td {
+        grid-column: 1 / -1;         /* "Гравців ще немає" на всю ширину */
+    }
+    .player-number {
+        font-size: 22px;
+    }
+    .player-sub {
+        display: block;
+        color: var(--color-muted);
+        font-size: 13px;
+        font-weight: 400;
+    }
+    /* Рядок у режимі редагування: поля одне під одним на всю ширину */
+    .players-table tr.edit-row {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 6px 0;
+        background: var(--color-white);
+    }
+    .players-table .edit-row td {
+        padding: 4px;
+    }
+    .players-table .edit-row .cell-actions {
+        display: flex;
+        gap: 8px;
+    }
+    .players-table .edit-row .cell-actions .btn {
+        flex: 1;
+        margin-left: 0;
+    }
+
+    /* Турніри -> картки одна під одною */
+    .tournaments-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .add-card {
+        flex-direction: row;
+        min-height: 0;
+        padding: 12px;
+    }
+    .add-card .plus {
+        font-size: 20px;
+    }
+    .add-card-title {
+        font-family: var(--font-text);
+        font-size: 15px;
+        text-transform: none;
+    }
+    .add-card-hint {
+        display: none;
+    }
+    .tournament-footer {
+        flex-direction: row;             /* "6 команд, 15 матчів" і кнопка в одному рядку */
+        justify-content: space-between;
+        align-items: center;
+    }
+    .choose-button {
+        width: auto;
+    }
+
+    /* Модальне вікно виїжджає знизу на всю ширину */
+    .modal {
+        width: 100%;
+        max-width: 100%;
+        margin: auto 0 0;                /* margin-top: auto — притискаємо до низу екрана */
+        border-right: none;
+        border-bottom: none;
+        border-left: none;
+        box-shadow: none;
+        animation: slide-up 0.2s ease-out;
+    }
+    .modal-cancel {
+        display: none;                   /* на телефоні вікно закривається хрестиком */
+    }
+    .modal-actions .btn {
+        flex: 1;
+        padding: 13px;
+    }
+}
+
+/* Анімація "виїжджання знизу": з-під краю екрана на своє місце */
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
