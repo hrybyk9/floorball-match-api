@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16
+    container_name: sports-db
+    restart: always
+    environment:
+      POSTGRES_USER: roksolana
+      POSTGRES_PASSWORD: "25"
+      POSTGRES_DB: sports_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
